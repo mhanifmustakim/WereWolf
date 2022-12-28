@@ -8,7 +8,7 @@ const Roles = {
     const availableActions = ["kill"];
     const action = {
       kill: function (playerId) {
-        Game.attack("Werewolves", playerId);
+        Game.attack("werewolf", playerId);
       },
     };
 
@@ -187,7 +187,7 @@ const Roles = {
     const availableActions = ["guard"];
     let canGuard = true;
 
-    const usedPower = () => {
+    const usedPower = (power) => {
       canGuard = false;
     };
 
@@ -199,19 +199,19 @@ const Roles = {
 
         if (bodyguardPlayer.role.canGuard) {
           Game.guard("bodyguard", playerId);
-          bodyguardPlayer.role.usedPower();
         }
       },
     };
 
     const onKillNight = () => {
       const resolve = {};
-      console.log(canGuard);
-      if (canGuard) {
-        usedPower();
-        const bodyguardPlayer = Game.players.filter(
-          (player) => player.role.name === "bodyguard"
-        )[0];
+      const bodyguardPlayer = Game.players.filter(
+        (player) => player.role.name === "bodyguard"
+      )[0];
+
+      if (bodyguardPlayer.role.canGuard) {
+        bodyguardPlayer.role.usedPower();
+        console.log(bodyguardPlayer.role.canGuard);
         resolve["save"] = bodyguardPlayer.id;
       }
       return resolve;
@@ -236,6 +236,42 @@ const Roles = {
       action,
       onKillNight,
       usedPower,
+    };
+  },
+
+  serialKiller: function () {
+    const name = "serial killer";
+    const type = "human";
+    const team = "Serial Killer";
+    const availableActions = null;
+
+    const onContact = (contactPerson) => {
+      const resolve = {};
+      const contactedPlayers = Game.players.filter(
+        (player) => player.role.name === contactPerson
+      );
+      console.log(contactPerson, contactedPlayers);
+      const randomIndex = Math.floor(Math.random() * contactedPlayers.length);
+      const randomTarget = contactedPlayers[randomIndex].id;
+      resolve["kill"] = randomTarget;
+
+      return resolve;
+    };
+
+    return {
+      get name() {
+        return name;
+      },
+      get type() {
+        return type;
+      },
+      get availableActions() {
+        return availableActions;
+      },
+      get team() {
+        return team;
+      },
+      onContact,
     };
   },
 };

@@ -87,8 +87,10 @@ const Game = (function () {
 
   const killAtNight = (playerIds) => {
     const names = [];
+    console.log(playerIds);
     playerIds.forEach((id) => {
       const player = getPlayerById(id);
+      console.log(player);
       player.die();
       names.push(player.name);
 
@@ -113,8 +115,17 @@ const Game = (function () {
   const checkGameEnd = () => {
     const wwCount = count("werewolf");
     const humanCount = count("human");
+    const skAlive =
+      players.filter(
+        (player) => player.isAlive && player.role.name === "serial killer"
+      ).length > 0;
+    const aliveCount = players.filter((player) => player.isAlive).length;
+    if (skAlive && aliveCount > 1) return;
 
-    if (wwCount >= humanCount) {
+    if (skAlive && aliveCount == 1) {
+      isGameOver = true;
+      winner = "Serial Killer";
+    } else if (wwCount >= humanCount) {
       isGameOver = true;
       winner = "Werewolves";
     } else if (wwCount === 0) {
@@ -146,7 +157,6 @@ const Game = (function () {
   };
 
   const guard = (savior, playerId) => {
-    const player = getPlayerById(playerId);
     nightEvents[savior] = {
       guard: playerId,
     };
@@ -156,9 +166,17 @@ const Game = (function () {
     const attacked = new Set();
     const revealed = new Set();
     const guarded = new Set();
-    Object.values(nightEvents).forEach((event) => {
+    Object.entries(nightEvents).forEach(([role, event]) => {
       if ("attack" in event) {
-        attacked.add(event.attack);
+        if ("onContact" in getPlayerById(event.attack).role) {
+          const resolution = getPlayerById(event.attack).role.onContact(role);
+          if ("kill" in resolution) {
+            console.log(resolution);
+            attacked.add(resolution["kill"]);
+          }
+        } else {
+          attacked.add(event.attack);
+        }
       }
 
       if ("reveal" in event) {
@@ -166,14 +184,35 @@ const Game = (function () {
       }
 
       if ("guard" in event) {
-        guarded.add(event.guard);
+        if ("onContact" in getPlayerById(event.guard).role) {
+          const resolution = getPlayerById(event.guard).role.onContact(role);
+          console.log(resolution);
+          if ("kill" in resolution) {
+            attacked.add(resolution["kill"]);
+          }
+        } else {
+          guarded.add(event.guard);
+        }
       }
     });
 
-    const killed = new Set(
-      Array.from(attacked).filter((id) => !guarded.has(id))
-    );
-    killAtNight(Array.from(killed));
+    const killed = [];
+    const saved = [];
+    Array.from(attacked).forEach((id) => {
+      if (guarded.has(id)) {
+        saved.push(id);
+        if (nightEvents.bodyguard.guard === id) {
+          const bodyguard = players.filter(
+            (player) => player.isAlive && player.role.name == "bodyguard"
+          )[0];
+          bodyguard.role.usedPower();
+        }
+      } else {
+        killed.push(id);
+      }
+    });
+
+    killAtNight(killed);
     nightEvents = {};
   };
 
