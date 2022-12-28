@@ -283,7 +283,7 @@ const View = (function () {
       const playerView = document.createElement("li");
       const name = document.createElement("header");
       name.textContent = `${player.name} => ${player.role.name}`;
-      if (player.role.team === winner) name.style.color = "crimson";
+      if (player.role.team === winner) name.style.color = "yellow";
 
       playerView.appendChild(name);
       playersList.appendChild(playerView);

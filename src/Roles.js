@@ -151,9 +151,6 @@ const Roles = {
       get availableActions() {
         return availableActions;
       },
-      get action() {
-        return action;
-      },
       get team() {
         return team;
       },
@@ -180,6 +177,65 @@ const Roles = {
       get team() {
         return team;
       },
+    };
+  },
+
+  bodyguard: function () {
+    const name = "bodyguard";
+    const type = "human";
+    const team = "Citizens";
+    const availableActions = ["guard"];
+    let canGuard = true;
+
+    const usedPower = () => {
+      canGuard = false;
+    };
+
+    const action = {
+      guard: function (playerId) {
+        const bodyguardPlayer = Game.players.filter(
+          (player) => player.role.name === "bodyguard"
+        )[0];
+
+        if (bodyguardPlayer.role.canGuard) {
+          Game.guard("bodyguard", playerId);
+          bodyguardPlayer.role.usedPower();
+        }
+      },
+    };
+
+    const onKillNight = () => {
+      const resolve = {};
+      console.log(canGuard);
+      if (canGuard) {
+        usedPower();
+        const bodyguardPlayer = Game.players.filter(
+          (player) => player.role.name === "bodyguard"
+        )[0];
+        resolve["save"] = bodyguardPlayer.id;
+      }
+      return resolve;
+    };
+
+    return {
+      get name() {
+        return name;
+      },
+      get type() {
+        return type;
+      },
+      get availableActions() {
+        return availableActions;
+      },
+      get team() {
+        return team;
+      },
+      get canGuard() {
+        return canGuard;
+      },
+      action,
+      onKillNight,
+      usedPower,
     };
   },
 };

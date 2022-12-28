@@ -90,6 +90,7 @@ const Game = (function () {
     playerIds.forEach((id) => {
       const player = getPlayerById(id);
       player.die();
+      names.push(player.name);
 
       if ("onKillNight" in player.role) {
         const result = player.role.onKillNight();
@@ -97,10 +98,13 @@ const Game = (function () {
           const additionalPlayer = getPlayerById(result["kill"]);
           additionalPlayer.die();
           names.push(additionalPlayer.name);
+        } else if ("save" in result) {
+          const target = getPlayerById(result["save"]);
+          target.revive();
+          const playerIndex = names.findIndex((name) => name === target.name);
+          names.splice(playerIndex, 1);
         }
       }
-
-      names.push(player.name);
     });
 
     View.resolveNight(names);
@@ -170,6 +174,7 @@ const Game = (function () {
       Array.from(attacked).filter((id) => !guarded.has(id))
     );
     killAtNight(Array.from(killed));
+    nightEvents = {};
   };
 
   return {

@@ -81,6 +81,29 @@ const RoleView = (function () {
 
       return mainElement;
     },
+    bodyguard: function () {
+      const mainElement = document.createElement("div");
+      const bodyguardRole = Roles["bodyguard"]();
+      Game.players.forEach((player) => {
+        if (!player.isAlive || player.role.name === "bodyguard") return;
+        const playerName = document.createElement("p");
+        playerName.textContent = player.name;
+        const guardBtn = document.createElement("button");
+        guardBtn.textContent = "GUARD";
+        guardBtn.addEventListener("click", (e) => {
+          e.target.style.backgroundColor = "green";
+          e.target.style.color = "white";
+          const buttons = mainElement.querySelectorAll("button");
+          buttons.forEach((button) => (button.disabled = true));
+          bodyguardRole.action.guard(player.id);
+          enableNextBtn();
+        });
+        mainElement.appendChild(playerName);
+        mainElement.appendChild(guardBtn);
+      });
+
+      return mainElement;
+    },
   };
 
   const render = (nightRoles, current = 0) => {

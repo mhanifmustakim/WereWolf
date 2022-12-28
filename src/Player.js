@@ -14,6 +14,10 @@ const Player = function (name) {
     hasRevealed = true;
   };
 
+  const revive = () => {
+    isAlive = true;
+  };
+
   const reset = () => {
     role = null;
     isAlive = true;
@@ -40,6 +44,7 @@ const Player = function (name) {
     get hasRevealed() {
       return hasRevealed;
     },
+    revive,
     die,
     setRole,
     reset,
