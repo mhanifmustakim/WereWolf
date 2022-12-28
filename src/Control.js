@@ -22,7 +22,12 @@ const Control = (function () {
 
   const revealPlayer = (players, current) => {
     const playerView = document.querySelector("#player-view");
-    playerView.textContent = "You are a " + players[current].role.name + "!";
+    const currentPlayer = players[current];
+    playerView.textContent = "You are a " + currentPlayer.role.name + "!";
+    if ("onSet" in currentPlayer.role) {
+      playerView.appendChild(currentPlayer.role.onSet());
+      playerView.classList.add("flex-column");
+    }
     playerView.removeEventListener("click", revealPlayer);
   };
 

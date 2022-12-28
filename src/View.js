@@ -146,12 +146,19 @@ const View = (function () {
       form.appendChild(formGroup);
     });
 
+    const buttons = document.createElement("div");
+    buttons.classList.add("spaced-vertical");
     const startGameBtn = document.createElement("button");
-    startGameBtn.classList.add("spaced-vertical");
     startGameBtn.textContent = "Start Game";
     startGameBtn.type = "submit";
+    const backBtn = document.createElement("button");
+    backBtn.textContent = "Back";
+    backBtn.type = "button";
+    backBtn.addEventListener("click", renderStart);
 
-    form.appendChild(startGameBtn);
+    buttons.appendChild(backBtn);
+    buttons.appendChild(startGameBtn);
+    form.appendChild(buttons);
 
     form.addEventListener("submit", Control.startGame);
     form.classList.add("flex-column");
@@ -276,6 +283,7 @@ const View = (function () {
       const playerView = document.createElement("li");
       const name = document.createElement("header");
       name.textContent = `${player.name} => ${player.role.name}`;
+      if (player.role.team === winner) name.style.color = "crimson";
 
       playerView.appendChild(name);
       playersList.appendChild(playerView);
@@ -306,6 +314,7 @@ const View = (function () {
     }
 
     const continueBtn = document.createElement("button");
+    continueBtn.classList.add("spaced-vertical");
     continueBtn.textContent = "continue";
     continueBtn.addEventListener("click", Game.startDay);
 

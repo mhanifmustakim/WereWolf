@@ -17,6 +17,7 @@ const Player = function (name) {
   const reset = () => {
     role = null;
     isAlive = true;
+    hasRevealed = false;
   };
 
   const die = () => {

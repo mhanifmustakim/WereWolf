@@ -64,7 +64,11 @@ const Game = (function () {
 
     const nightRoles = new Set();
     players.forEach((player) => {
-      if (player.role.availableActions && !nightRoles.has(player.role.name)) {
+      if (
+        player.role.availableActions &&
+        !nightRoles.has(player.role.name) &&
+        player.isAlive
+      ) {
         nightRoles.add(player.role.name);
       }
     });
@@ -86,6 +90,16 @@ const Game = (function () {
     playerIds.forEach((id) => {
       const player = getPlayerById(id);
       player.die();
+
+      if ("onKillNight" in player.role) {
+        const result = player.role.onKillNight();
+        if ("kill" in result) {
+          const additionalPlayer = getPlayerById(result["kill"]);
+          additionalPlayer.die();
+          names.push(additionalPlayer.name);
+        }
+      }
+
       names.push(player.name);
     });
 
@@ -96,7 +110,7 @@ const Game = (function () {
     const wwCount = count("werewolf");
     const humanCount = count("human");
 
-    if (wwCount === humanCount) {
+    if (wwCount >= humanCount) {
       isGameOver = true;
       winner = "Werewolves";
     } else if (wwCount === 0) {
@@ -124,6 +138,13 @@ const Game = (function () {
     player.reveal();
     nightEvents[revealer] = {
       reveal: playerId,
+    };
+  };
+
+  const guard = (savior, playerId) => {
+    const player = getPlayerById(playerId);
+    nightEvents[savior] = {
+      guard: playerId,
     };
   };
 
@@ -171,6 +192,7 @@ const Game = (function () {
     checkGameEnd,
     attack,
     reveal,
+    guard,
     finishNight,
     getPlayerById,
   };

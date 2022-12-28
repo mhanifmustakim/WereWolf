@@ -58,6 +58,29 @@ const RoleView = (function () {
 
       return mainElement;
     },
+    doctor: function () {
+      const mainElement = document.createElement("div");
+      const doctor = Roles["doctor"]();
+      Game.players.forEach((player) => {
+        if (!player.isAlive || player.role.name === "doctor") return;
+        const playerName = document.createElement("p");
+        playerName.textContent = player.name;
+        const healBtn = document.createElement("button");
+        healBtn.textContent = "HEAL";
+        healBtn.addEventListener("click", (e) => {
+          e.target.style.backgroundColor = "green";
+          e.target.style.color = "white";
+          const buttons = mainElement.querySelectorAll("button");
+          buttons.forEach((button) => (button.disabled = true));
+          doctor.action.heal(player.id);
+          enableNextBtn();
+        });
+        mainElement.appendChild(playerName);
+        mainElement.appendChild(healBtn);
+      });
+
+      return mainElement;
+    },
   };
 
   const render = (nightRoles, current = 0) => {
@@ -88,7 +111,9 @@ const RoleView = (function () {
     container.appendChild(roleActionContainer);
 
     const nextBtn = document.createElement("button");
-    nextBtn.disabled = true;
+    nextBtn.disabled = !Array.from(element.querySelectorAll("button")).every(
+      (button) => button.disabled === true
+    );
     nextBtn.id = "nextButton";
     if (nextRole) {
       nextBtn.textContent = "NEXT ROLE";
@@ -100,6 +125,7 @@ const RoleView = (function () {
       nextBtn.textContent = "GO TO DAY";
       nextBtn.addEventListener("click", Game.finishNight);
     }
+
     container.appendChild(nextBtn);
     main.appendChild(container);
   };
