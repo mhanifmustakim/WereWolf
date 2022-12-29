@@ -140,6 +140,44 @@ const RoleView = (function () {
 
       return mainElement;
     },
+
+    detective: function () {
+      const mainElement = document.createElement("div");
+      const detective = Roles["detective"]();
+      let buttonsClicked = [];
+      Game.players.forEach((player) => {
+        if (!player.isAlive || player.role.name === "detective") return;
+        const playerName = document.createElement("p");
+        playerName.textContent = player.name;
+        const revealBtn = document.createElement("button");
+        revealBtn.textContent = "CHECK";
+        revealBtn.addEventListener("click", (e) => {
+          buttonsClicked.push(player.id);
+          e.target.style.backgroundColor = "green";
+          e.target.style.color = "white";
+          e.target.disabled = true;
+          if (buttonsClicked.length == 2) {
+            mainElement.innerHTML = "";
+            const result = document.createElement("h3");
+            result.classList.add("text-xl");
+            result.textContent = `${
+              Game.getPlayerById(buttonsClicked[0]).name
+            } and ${Game.getPlayerById(buttonsClicked[1]).name} are in ${
+              detective.action.choose(...buttonsClicked)
+                ? "the same team!"
+                : "different teams!"
+            }`;
+            mainElement.appendChild(result);
+            enableNextBtn();
+          }
+        });
+
+        mainElement.appendChild(playerName);
+        mainElement.appendChild(revealBtn);
+      });
+
+      return mainElement;
+    },
   };
 
   const render = (nightRoles, current = 0) => {

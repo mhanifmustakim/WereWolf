@@ -381,6 +381,36 @@ const Roles = {
       setTarget,
     };
   },
+
+  detective: function () {
+    const name = "detective";
+    const type = "human";
+    const team = "Citizens";
+    const availableActions = ["choose"];
+    const action = {
+      choose: function (player1Id, player2Id) {
+        return Game.checkSimilar(player1Id, player2Id);
+      },
+    };
+
+    return {
+      get name() {
+        return name;
+      },
+      get type() {
+        return type;
+      },
+      get availableActions() {
+        return availableActions;
+      },
+      get action() {
+        return action;
+      },
+      get team() {
+        return team;
+      },
+    };
+  },
 };
 
 export default Roles;

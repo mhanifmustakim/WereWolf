@@ -192,6 +192,12 @@ const Game = (function () {
     };
   };
 
+  const checkSimilar = (player1Id, player2Id) => {
+    return (
+      getPlayerById(player1Id).role.team === getPlayerById(player2Id).role.team
+    );
+  };
+
   const finishNight = () => {
     console.log(nightEvents);
     const attacked = new Set();
@@ -266,6 +272,7 @@ const Game = (function () {
     attack,
     reveal,
     guard,
+    checkSimilar,
     finishNight,
     getPlayerById,
   };
