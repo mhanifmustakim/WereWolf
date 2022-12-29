@@ -84,12 +84,18 @@ const RoleView = (function () {
     bodyguard: function () {
       const mainElement = document.createElement("div");
       const bodyguardRole = Roles["bodyguard"]();
+      const bodyguardPlayer = Game.players.filter(
+        (player) => player.role.name === "bodyguard"
+      )[0];
       Game.players.forEach((player) => {
         if (!player.isAlive || player.role.name === "bodyguard") return;
         const playerName = document.createElement("p");
         playerName.textContent = player.name;
         const guardBtn = document.createElement("button");
+
         guardBtn.textContent = "GUARD";
+        if (bodyguardPlayer.role.powerUsed === true) guardBtn.disabled = true;
+
         guardBtn.addEventListener("click", (e) => {
           e.target.style.backgroundColor = "green";
           e.target.style.color = "white";
@@ -100,6 +106,36 @@ const RoleView = (function () {
         });
         mainElement.appendChild(playerName);
         mainElement.appendChild(guardBtn);
+      });
+
+      return mainElement;
+    },
+
+    assassin: function () {
+      const mainElement = document.createElement("div");
+      const assassinRole = Roles["assassin"]();
+      const assassinPlayer = Game.players.filter(
+        (player) => player.role.name === "assassin"
+      )[0];
+      Game.players.forEach((player) => {
+        if (!player.isAlive || player.role.name === "assassin") return;
+        const playerName = document.createElement("p");
+        playerName.textContent = player.name;
+        const killBtn = document.createElement("button");
+
+        killBtn.textContent = "KILL";
+        if (assassinPlayer.role.powerUsed === true) killBtn.disabled = true;
+
+        killBtn.addEventListener("click", (e) => {
+          e.target.style.backgroundColor = "crimson";
+          e.target.style.color = "white";
+          const buttons = mainElement.querySelectorAll("button");
+          buttons.forEach((button) => (button.disabled = true));
+          assassinRole.action.kill(player.id);
+          enableNextBtn();
+        });
+        mainElement.appendChild(playerName);
+        mainElement.appendChild(killBtn);
       });
 
       return mainElement;
@@ -148,6 +184,13 @@ const RoleView = (function () {
       nextBtn.textContent = "GO TO DAY";
       nextBtn.addEventListener("click", Game.finishNight);
     }
+
+    const playerRole = Game.players.filter(
+      (player) => player.isAlive && player.role.name === currentRole
+    )[0];
+
+    if ("powerUsed" in playerRole.role && playerRole.role.powerUsed === true)
+      nextBtn.disabled = false;
 
     container.appendChild(nextBtn);
     main.appendChild(container);

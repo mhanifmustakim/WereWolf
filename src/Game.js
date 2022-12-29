@@ -163,6 +163,7 @@ const Game = (function () {
   };
 
   const finishNight = () => {
+    console.log(nightEvents);
     const attacked = new Set();
     const revealed = new Set();
     const guarded = new Set();
@@ -171,7 +172,6 @@ const Game = (function () {
         if ("onContact" in getPlayerById(event.attack).role) {
           const resolution = getPlayerById(event.attack).role.onContact(role);
           if ("kill" in resolution) {
-            console.log(resolution);
             attacked.add(resolution["kill"]);
           }
         } else {
@@ -186,7 +186,6 @@ const Game = (function () {
       if ("guard" in event) {
         if ("onContact" in getPlayerById(event.guard).role) {
           const resolution = getPlayerById(event.guard).role.onContact(role);
-          console.log(resolution);
           if ("kill" in resolution) {
             attacked.add(resolution["kill"]);
           }

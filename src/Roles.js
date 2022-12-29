@@ -185,10 +185,10 @@ const Roles = {
     const type = "human";
     const team = "Citizens";
     const availableActions = ["guard"];
-    let canGuard = true;
+    let powerUsed = false;
 
-    const usedPower = (power) => {
-      canGuard = false;
+    const usedPower = () => {
+      powerUsed = true;
     };
 
     const action = {
@@ -197,7 +197,7 @@ const Roles = {
           (player) => player.role.name === "bodyguard"
         )[0];
 
-        if (bodyguardPlayer.role.canGuard) {
+        if (!bodyguardPlayer.role.powerUsed) {
           Game.guard("bodyguard", playerId);
         }
       },
@@ -209,9 +209,8 @@ const Roles = {
         (player) => player.role.name === "bodyguard"
       )[0];
 
-      if (bodyguardPlayer.role.canGuard) {
+      if (!bodyguardPlayer.role.powerUsed) {
         bodyguardPlayer.role.usedPower();
-        console.log(bodyguardPlayer.role.canGuard);
         resolve["save"] = bodyguardPlayer.id;
       }
       return resolve;
@@ -230,8 +229,8 @@ const Roles = {
       get team() {
         return team;
       },
-      get canGuard() {
-        return canGuard;
+      get powerUsed() {
+        return powerUsed;
       },
       action,
       onKillNight,
@@ -250,7 +249,6 @@ const Roles = {
       const contactedPlayers = Game.players.filter(
         (player) => player.role.name === contactPerson
       );
-      console.log(contactPerson, contactedPlayers);
       const randomIndex = Math.floor(Math.random() * contactedPlayers.length);
       const randomTarget = contactedPlayers[randomIndex].id;
       resolve["kill"] = randomTarget;
@@ -272,6 +270,56 @@ const Roles = {
         return team;
       },
       onContact,
+    };
+  },
+
+  assassin: function () {
+    const name = "assassin";
+    const type = "human";
+    const team = "Citizens";
+    const availableActions = ["kill"];
+    let powerUsed = false;
+
+    const usedPower = () => {
+      powerUsed = true;
+    };
+
+    const action = {
+      kill: function (playerId) {
+        const assassinPlayer = Game.players.filter(
+          (player) => player.isAlive && player.role.name === "assassin"
+        )[0];
+        if (!assassinPlayer.role.powerUsed) {
+          Game.attack("assassin", playerId);
+          Game.players
+            .filter(
+              (player) => player.isAlive && player.role.name === "assassin"
+            )[0]
+            .role.usedPower();
+        }
+      },
+    };
+
+    return {
+      get name() {
+        return name;
+      },
+      get type() {
+        return type;
+      },
+      get availableActions() {
+        return availableActions;
+      },
+      get action() {
+        return action;
+      },
+      get team() {
+        return team;
+      },
+      get powerUsed() {
+        return powerUsed;
+      },
+      usedPower,
     };
   },
 };
