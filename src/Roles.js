@@ -322,6 +322,65 @@ const Roles = {
       usedPower,
     };
   },
+
+  mercenary: function () {
+    const name = "mercenary";
+    const type = "human";
+    const availableActions = null;
+    let team = "Mercenary";
+    let target = null;
+
+    const changeTeam = () => {
+      team = "Citizens";
+    };
+
+    const setTarget = (id) => {
+      target = id;
+    };
+
+    const onRolesSet = () => {
+      const possibleTargets = Game.players.filter(
+        (player) => player.role.team === "Citizens"
+      );
+      const randomIndex = Math.floor(Math.random() * possibleTargets.length);
+      const targetPlayer = possibleTargets[randomIndex];
+      const mercenaryPlayer = Game.players.filter(
+        (player) => player.role.name === "mercenary"
+      )[0];
+      mercenaryPlayer.role.setTarget(targetPlayer.id);
+    };
+
+    const onSet = () => {
+      const element = document.createElement("h4");
+      const targetId = Game.players.filter(
+        (player) => player.role.name === "mercenary"
+      )[0].role.target;
+      element.innerHTML = `Your target is ${Game.getPlayerById(targetId).name}`;
+      return element;
+    };
+
+    return {
+      get name() {
+        return name;
+      },
+      get type() {
+        return type;
+      },
+      get availableActions() {
+        return availableActions;
+      },
+      get team() {
+        return team;
+      },
+      get target() {
+        return target;
+      },
+      onRolesSet,
+      onSet,
+      changeTeam,
+      setTarget,
+    };
+  },
 };
 
 export default Roles;

@@ -94,7 +94,7 @@ const RoleView = (function () {
         const guardBtn = document.createElement("button");
 
         guardBtn.textContent = "GUARD";
-        if (bodyguardPlayer.role.powerUsed === true) guardBtn.disabled = true;
+        if (bodyguardPlayer.role.powerUsed) guardBtn.disabled = true;
 
         guardBtn.addEventListener("click", (e) => {
           e.target.style.backgroundColor = "green";

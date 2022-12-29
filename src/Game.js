@@ -8,6 +8,7 @@ const Game = (function () {
   let winner = null;
   let nightEvents = {};
   let prevRoles = null;
+  let votedOut = [];
 
   const addPlayer = (player) => {
     players.push(player);
@@ -22,6 +23,12 @@ const Game = (function () {
         const index = Math.floor(Math.random() * unsetPlayers.length);
         const randomPlayer = unsetPlayers.splice(index, 1)[0];
         randomPlayer.setRole(role);
+      }
+    });
+
+    Game.players.forEach((player) => {
+      if ("onRolesSet" in player.role) {
+        player.role.onRolesSet();
       }
     });
 
@@ -49,6 +56,7 @@ const Game = (function () {
     dayCount = 0;
     winner = null;
     View.revealRoles(players);
+    votedOut = [];
   };
 
   const startDay = () => {
@@ -80,9 +88,17 @@ const Game = (function () {
     players.forEach((player) => {
       if (player.id === playerId) {
         player.die();
-        console.log(`${player.name} is dead!`);
+        votedOut.push(player.id);
       }
     });
+  };
+
+  const checkMercenaryTarget = (id) => {
+    const mercenary = Game.players.filter(
+      (player) => player.isAlive && player.role.name === "mercenary"
+    );
+    if (mercenary.length > 0 && mercenary[0].role.target === id)
+      mercenary[0].role.changeTeam(mercenary.id, "Citizens");
   };
 
   const killAtNight = (playerIds) => {
@@ -90,7 +106,7 @@ const Game = (function () {
     console.log(playerIds);
     playerIds.forEach((id) => {
       const player = getPlayerById(id);
-      console.log(player);
+      checkMercenaryTarget(id);
       player.die();
       names.push(player.name);
 
@@ -115,6 +131,20 @@ const Game = (function () {
   const checkGameEnd = () => {
     const wwCount = count("werewolf");
     const humanCount = count("human");
+
+    const mercenary = Game.players.filter(
+      (player) => player.isAlive && player.role.name === "mercenary"
+    );
+    if (
+      votedOut.length > 0 &&
+      mercenary.length > 0 &&
+      votedOut.pop() === mercenary[0].role.target
+    ) {
+      isGameOver = true;
+      winner = "Mercenary";
+      PubSub.publish("Game Over", { players, winner });
+    }
+
     const skAlive =
       players.filter(
         (player) => player.isAlive && player.role.name === "serial killer"
