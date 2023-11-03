@@ -93,7 +93,7 @@ const Roles = {
       team: "Citizens",
       availableActions: ["heal"],
       description:
-        "You can choose one player to heal at night.\n" +
+        "You can choose one player to heal at night.<br>" +
         "The player will not die if he is attacked.",
     });
 
@@ -113,7 +113,7 @@ const Roles = {
       team: "Citizens",
       availableActions: null,
       description:
-        "If your lover is killed at night, you also die out of sadness.\n" +
+        "If your lover is killed at night, you also die out of sadness.<br>" +
         '"You Die I Die"',
     });
 
@@ -206,7 +206,7 @@ const Roles = {
       team: "Werewolf",
       availableActions: null,
       description:
-        "Any player that contacts you in the night will be killed.\n" +
+        "Any player that contacts you in the night will be killed.<br>" +
         "You belong to the Werewolves team.",
     });
 
@@ -310,7 +310,7 @@ const Roles = {
       team: "Citizens",
       availableActions: ["choose"],
       description:
-        "You can choose 2 players at night.\n" +
+        "You can choose 2 players at night.<br>" +
         "You can check if both players are from the same team.",
     });
 
