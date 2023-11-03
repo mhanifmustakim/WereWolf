@@ -217,6 +217,7 @@ const View = (function () {
     container.classList.add("focus-view");
 
     let text;
+    // Change text output based on whether there is a person voted out
     if ("VotedOut" in data) {
       text = `The villagers have cast their votes, and the results are in.<br> ${highlight(
         data["VotedOut"]
@@ -225,20 +226,30 @@ const View = (function () {
       text =
         "The villagers have decided to skip the voting phase.<br>" +
         highlight("No one") +
-        "will be lynched by the village today.";
+        " will be lynched by the village today.";
     }
 
+    // Result of the voting
     const resolution = document.createElement("h3");
     resolution.innerHTML = text;
     resolution.classList.add("text-center");
     container.appendChild(resolution);
 
+    // Continue button
     const continueBtn = document.createElement("button");
     continueBtn.textContent = "CONTINUE";
     continueBtn.addEventListener("click", Game.startNight);
 
     main.appendChild(container);
     main.appendChild(continueBtn);
+  };
+
+  const renderRoles = (roles) => {
+    let text = "";
+    Object.entries(roles).forEach(([role, quantity]) => {
+      if (quantity !== 0) text += role + " : " + quantity + ", ";
+    });
+    return text;
   };
 
   const renderDay = (dayCount) => {
@@ -253,9 +264,10 @@ const View = (function () {
     const discussPrompt = document.createElement("p");
     discussPrompt.classList.add("spaced-vertical");
     discussPrompt.classList.add("text-center");
-    discussPrompt.textContent = `It's the ${toOrdinal(
+    discussPrompt.innerHTML = `It's the ${toOrdinal(
       dayCount
-    )} day of the game, and the village is already on edge. Rumors of werewolves lurking in the shadows have everyone on edge. The villagers must come together and discuss their suspicions to determine who among them may be the werewolves. Who do you suspect and why? What evidence do you have to support your suspicions?`;
+    )} day of the game, and the village is already on edge. Rumors of werewolves lurking in the shadows have everyone on edge. The villagers must come together and discuss their suspicions to determine who among them may be the werewolves. Who do you suspect and why? What evidence do you have to support your suspicions?<br><br>
+    (The roles in this game are <br>${renderRoles(Game.prevRoles)})`;
 
     const gotoVoteBtn = document.createElement("button");
     gotoVoteBtn.textContent = "START VOTING";

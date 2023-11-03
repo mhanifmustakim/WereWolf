@@ -1,125 +1,123 @@
 import Game from "./Game";
 
+const createRole = ({ name, type, team, availableActions, description }) => {
+  return {
+    get name() {
+      return name;
+    },
+    get type() {
+      return type;
+    },
+    get availableActions() {
+      return availableActions;
+    },
+    get team() {
+      return team;
+    },
+    get description() {
+      return description;
+    },
+    set team(newTeam) {
+      team = newTeam;
+    },
+  };
+};
+
 const Roles = {
   werewolf: function () {
-    const name = "werewolf";
-    const type = "werewolf";
-    const team = "Werewolves";
-    const availableActions = ["kill"];
-    const action = {
+    const self = createRole({
+      name: "werewolf",
+      team: "Werewolves",
+      type: "werewolf",
+      availableActions: ["kill"],
+      description:
+        "The werewolves can choose one person to attack every night.",
+    });
+
+    self.action = {
       kill: function (playerId) {
         Game.attack("werewolf", playerId);
       },
     };
 
-    return {
-      get name() {
-        return name;
-      },
-      get type() {
-        return type;
-      },
-      get availableActions() {
-        return availableActions;
-      },
-      get action() {
-        return action;
-      },
-      get team() {
-        return team;
-      },
+    self.OnRevealAtStart = () => {
+      const werewolves = [];
+      const element = document.createElement("h4");
+      Game.players.forEach((player) => {
+        if (player.role.name === "werewolf") {
+          werewolves.push(player.name);
+        }
+      });
+      if (werewolves.length > 1)
+        element.innerHTML = `The werewolves are <br>${werewolves.join(", ")}`;
+      return element;
     };
+
+    return self;
   },
 
   citizen: function () {
-    const name = "citizen";
-    const type = "human";
-    const team = "Citizens";
-    const availableActions = null;
-
-    return {
-      get name() {
-        return name;
-      },
-      get type() {
-        return type;
-      },
-      get availableActions() {
-        return availableActions;
-      },
-      get team() {
-        return team;
-      },
-    };
+    return createRole({
+      name: "citizen",
+      type: "human",
+      team: "Citizens",
+      availableActions: null,
+      description: "You are a normal citizen with no special abilities.",
+    });
   },
 
   seer: function () {
-    const name = "seer";
-    const type = "human";
-    const team = "Citizens";
-    const availableActions = ["reveal"];
-    const action = {
+    const self = createRole({
+      name: "seer",
+      type: "human",
+      team: "Citizens",
+      availableActions: ["reveal"],
+      description: "You can reveal the role of a player you choose at night.",
+    });
+
+    self.targets = [...Game.players];
+    self.action = {
       reveal: function (playerId) {
         Game.reveal("seer", playerId);
         return Game.getPlayerById(playerId).role.name;
       },
     };
 
-    return {
-      get name() {
-        return name;
-      },
-      get type() {
-        return type;
-      },
-      get availableActions() {
-        return availableActions;
-      },
-      get action() {
-        return action;
-      },
-      get team() {
-        return team;
-      },
-    };
+    return self;
   },
 
   doctor: function () {
-    const name = "doctor";
-    const type = "human";
-    const team = "Citizens";
-    const availableActions = ["heal"];
-    const action = {
+    const self = createRole({
+      name: "doctor",
+      type: "human",
+      team: "Citizens",
+      availableActions: ["heal"],
+      description:
+        "You can choose one player to heal at night.\n" +
+        "The player will not die if he is attacked.",
+    });
+
+    self.action = {
       heal: function (playerId) {
         Game.guard("doctor", playerId);
       },
     };
 
-    return {
-      get name() {
-        return name;
-      },
-      get type() {
-        return type;
-      },
-      get availableActions() {
-        return availableActions;
-      },
-      get action() {
-        return action;
-      },
-      get team() {
-        return team;
-      },
-    };
+    return self;
   },
 
   lover: function () {
-    const name = "lover";
-    const type = "human";
-    const team = "Citizens";
-    const availableActions = null;
-    const onSet = () => {
+    const self = createRole({
+      name: "lover",
+      type: "human",
+      team: "Citizens",
+      availableActions: null,
+      description:
+        "If your lover is killed at night, you also die out of sadness.\n" +
+        '"You Die I Die"',
+    });
+
+    self.OnRevealAtStart = () => {
       const lovers = [];
       const element = document.createElement("h4");
       Game.players.forEach((player) => {
@@ -131,67 +129,49 @@ const Roles = {
       return element;
     };
 
-    const onKillNight = () => {
+    self.OnKillAtNight = (id) => {
       const resolve = {};
       Game.players.forEach((player) => {
-        if (player.role.name === "lover" && player.isAlive) {
+        if (player.role.name === "lover" && player.isAlive && player.id != id) {
           resolve["kill"] = player.id;
         }
       });
       return resolve;
     };
 
-    return {
-      get name() {
-        return name;
-      },
-      get type() {
-        return type;
-      },
-      get availableActions() {
-        return availableActions;
-      },
-      get team() {
-        return team;
-      },
-      onSet,
-      onKillNight,
-    };
+    return self;
   },
-  psycho: function () {
-    const name = "psycho";
-    const type = "human";
-    const team = "Werewolves";
-    const availableActions = null;
 
-    return {
-      get name() {
-        return name;
-      },
-      get type() {
-        return type;
-      },
-      get availableActions() {
-        return availableActions;
-      },
-      get team() {
-        return team;
-      },
-    };
+  psycho: function () {
+    const self = createRole({
+      name: "psycho",
+      type: "human",
+      team: "Werewolves",
+      availableActions: null,
+      description:
+        "You are a normal human that belongs to the Werewolves team.",
+    });
+
+    return self;
   },
 
   bodyguard: function () {
-    const name = "bodyguard";
-    const type = "human";
-    const team = "Citizens";
-    const availableActions = ["guard"];
-    let powerUsed = false;
+    const self = createRole({
+      name: "bodyguard",
+      type: "human",
+      team: "Citizens",
+      availableActions: ["guard"],
+      description:
+        "You can withstand one attack. You can choose to protect others when you are still strong.",
+    });
 
-    const usedPower = () => {
-      powerUsed = true;
+    self.powerUsed = false;
+
+    self.usedPower = () => {
+      self.powerUsed = true;
     };
 
-    const action = {
+    self.action = {
       guard: function (playerId) {
         const bodyguardPlayer = Game.players.filter(
           (player) => player.role.name === "bodyguard"
@@ -203,7 +183,7 @@ const Roles = {
       },
     };
 
-    const onKillNight = () => {
+    self.OnKillAtNight = (id) => {
       const resolve = {};
       const bodyguardPlayer = Game.players.filter(
         (player) => player.role.name === "bodyguard"
@@ -216,35 +196,21 @@ const Roles = {
       return resolve;
     };
 
-    return {
-      get name() {
-        return name;
-      },
-      get type() {
-        return type;
-      },
-      get availableActions() {
-        return availableActions;
-      },
-      get team() {
-        return team;
-      },
-      get powerUsed() {
-        return powerUsed;
-      },
-      action,
-      onKillNight,
-      usedPower,
-    };
+    return self;
   },
 
   serialKiller: function () {
-    const name = "serial killer";
-    const type = "human";
-    const team = "Serial Killer";
-    const availableActions = null;
+    const self = createRole({
+      name: "serial killer",
+      type: "human",
+      team: "Werewolf",
+      availableActions: null,
+      description:
+        "Any player that contacts you in the night will be killed.\n" +
+        "You belong to the Werewolves team.",
+    });
 
-    const onContact = (contactPerson) => {
+    self.onContact = (contactPerson) => {
       const resolve = {};
       const contactedPlayers = Game.players.filter(
         (player) => player.role.name === contactPerson
@@ -256,35 +222,25 @@ const Roles = {
       return resolve;
     };
 
-    return {
-      get name() {
-        return name;
-      },
-      get type() {
-        return type;
-      },
-      get availableActions() {
-        return availableActions;
-      },
-      get team() {
-        return team;
-      },
-      onContact,
-    };
+    return self;
   },
 
   assassin: function () {
-    const name = "assassin";
-    const type = "human";
-    const team = "Citizens";
-    const availableActions = ["kill"];
-    let powerUsed = false;
+    const self = createRole({
+      name: "assassin",
+      type: "human",
+      team: "Citizens",
+      availableActions: ["kill"],
+      description: "You can kill 1 player at night throughout the game.",
+    });
 
-    const usedPower = () => {
-      powerUsed = true;
+    self.powerUsed = false;
+
+    self.usedPower = () => {
+      self.powerUsed = true;
     };
 
-    const action = {
+    self.action = {
       kill: function (playerId) {
         const assassinPlayer = Game.players.filter(
           (player) => player.isAlive && player.role.name === "assassin"
@@ -300,45 +256,30 @@ const Roles = {
       },
     };
 
-    return {
-      get name() {
-        return name;
-      },
-      get type() {
-        return type;
-      },
-      get availableActions() {
-        return availableActions;
-      },
-      get action() {
-        return action;
-      },
-      get team() {
-        return team;
-      },
-      get powerUsed() {
-        return powerUsed;
-      },
-      usedPower,
-    };
+    return self;
   },
 
   mercenary: function () {
-    const name = "mercenary";
-    const type = "human";
-    const availableActions = null;
-    let team = "Mercenary";
-    let target = null;
+    const self = createRole({
+      name: "mercenary",
+      type: "human",
+      team: "Mercenary",
+      availableActions: null,
+      description:
+        "You will receive a target. You must persuade others to vote out the player.",
+    });
 
-    const changeTeam = () => {
-      team = "Citizens";
+    self.target = null;
+
+    self.changeTeam = (newTeam) => {
+      self.team = newTeam;
     };
 
-    const setTarget = (id) => {
-      target = id;
+    self.setTarget = (id) => {
+      self.target = id;
     };
 
-    const onRolesSet = () => {
+    self.onRolesSet = () => {
       const possibleTargets = Game.players.filter(
         (player) => player.role.team === "Citizens"
       );
@@ -350,7 +291,7 @@ const Roles = {
       mercenaryPlayer.role.setTarget(targetPlayer.id);
     };
 
-    const onSet = () => {
+    self.OnRevealAtStart = () => {
       const element = document.createElement("h4");
       const targetId = Game.players.filter(
         (player) => player.role.name === "mercenary"
@@ -359,57 +300,46 @@ const Roles = {
       return element;
     };
 
-    return {
-      get name() {
-        return name;
-      },
-      get type() {
-        return type;
-      },
-      get availableActions() {
-        return availableActions;
-      },
-      get team() {
-        return team;
-      },
-      get target() {
-        return target;
-      },
-      onRolesSet,
-      onSet,
-      changeTeam,
-      setTarget,
-    };
+    return self;
   },
 
   detective: function () {
-    const name = "detective";
-    const type = "human";
-    const team = "Citizens";
-    const availableActions = ["choose"];
-    const action = {
+    const self = createRole({
+      name: "detective",
+      type: "human",
+      team: "Citizens",
+      availableActions: ["choose"],
+      description:
+        "You can choose 2 players at night.\n" +
+        "You can check if both players are from the same team.",
+    });
+
+    self.action = {
       choose: function (player1Id, player2Id) {
         return Game.checkSimilar(player1Id, player2Id);
       },
     };
 
-    return {
-      get name() {
-        return name;
-      },
-      get type() {
-        return type;
-      },
-      get availableActions() {
-        return availableActions;
-      },
-      get action() {
-        return action;
-      },
-      get team() {
-        return team;
+    return self;
+  },
+
+  witch: function () {
+    const self = createRole({
+      name: "witch",
+      type: "human",
+      team: "Citizens",
+      availableActions: ["reveal"],
+      description:
+        "You can reveal the role of a dead player you choose at night.",
+    });
+
+    self.action = {
+      reveal: function (playerId) {
+        return Game.getPlayerById(playerId).role.type;
       },
     };
+
+    return self;
   },
 };
 

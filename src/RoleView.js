@@ -178,6 +178,41 @@ const RoleView = (function () {
 
       return mainElement;
     },
+
+    witch: function () {
+      const mainElement = document.createElement("div");
+      const witch = Roles["witch"]();
+      const deadPlayers = Game.players.filter((player) => !player.isAlive);
+
+      if (deadPlayers.length === 0) {
+        const text = document.createElement("p");
+        text.textContent = "There are no players dead yet!";
+        mainElement.appendChild(text);
+        return mainElement;
+      }
+
+      deadPlayers.forEach((player) => {
+        const playerName = document.createElement("p");
+        playerName.textContent = player.name;
+        const revealBtn = document.createElement("button");
+        revealBtn.textContent = "CHECK";
+        revealBtn.addEventListener("click", () => {
+          mainElement.innerHTML = "";
+          const role = document.createElement("h3");
+          role.classList.add("text-xl");
+          role.textContent = `${player.name} is a ${witch.action.reveal(
+            player.id
+          )}.`;
+          mainElement.appendChild(role);
+          enableNextBtn();
+        });
+
+        mainElement.appendChild(playerName);
+        mainElement.appendChild(revealBtn);
+      });
+
+      return mainElement;
+    },
   };
 
   const render = (nightRoles, current = 0) => {
@@ -223,12 +258,26 @@ const RoleView = (function () {
       nextBtn.addEventListener("click", Game.finishNight);
     }
 
-    const playerRole = Game.players.filter(
+    let playerRole = Game.players.filter(
       (player) => player.isAlive && player.role.name === currentRole
-    )[0];
+    );
 
-    if ("powerUsed" in playerRole.role && playerRole.role.powerUsed === true)
+    if (
+      Game.players.filter((player) => !player.isAlive).length === 0 &&
+      currentRole === "witch"
+    ) {
       nextBtn.disabled = false;
+    }
+
+    if (playerRole.length === 0) {
+      element
+        .querySelectorAll("button")
+        .forEach((btn) => (btn.disabled = true));
+      nextBtn.disabled = false;
+    } else {
+      playerRole = playerRole[0];
+      if ("powerUsed" in playerRole.role) nextBtn.disabled = false;
+    }
 
     container.appendChild(nextBtn);
     main.appendChild(container);

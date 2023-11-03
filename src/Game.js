@@ -14,8 +14,19 @@ const Game = (function () {
     players.push(player);
   };
 
+  const shuffleArray = (array) => {
+    for (var i = array.length - 1; i > 0; i--) {
+      var j = Math.floor(Math.random() * (i + 1));
+      var temp = array[i];
+      array[i] = array[j];
+      array[j] = temp;
+    }
+    return array;
+  };
+
+  // Set Roles of the Players randomly based on role Quantities
   const setRoles = (roleQuantities) => {
-    let unsetPlayers = [...players];
+    let unsetPlayers = shuffleArray([...players]);
     Object.entries(roleQuantities).forEach((entry) => {
       const role = entry[0];
       const quantity = parseInt(entry[1]);
@@ -26,15 +37,18 @@ const Game = (function () {
       }
     });
 
+    // Handle special feature on Role.onRolesSet
     Game.players.forEach((player) => {
       if ("onRolesSet" in player.role) {
         player.role.onRolesSet();
       }
     });
 
+    // Set default for possible next game
     prevRoles = roleQuantities;
   };
 
+  // Count the number of players alive with role: type
   const count = (type) => {
     let total = 0;
     players.forEach((player) => {
@@ -45,12 +59,14 @@ const Game = (function () {
     return total;
   };
 
+  // Reset all players data
   const reset = () => {
     for (let i = 0; i < players.length; i++) {
       players[i].reset();
     }
   };
 
+  // Start a new Game
   const start = () => {
     isGameOver = false;
     dayCount = 0;
@@ -61,29 +77,29 @@ const Game = (function () {
 
   const startDay = () => {
     dayCount += 1;
-    checkGameEnd();
 
+    // Render day if not Game Over
+    checkGameEnd();
     if (!isGameOver) View.renderDay(dayCount);
   };
 
   const startNight = () => {
     checkGameEnd();
-    if (isGameOver) return;
+    if (isGameOver) return; // Stop night actions if already Game Over
 
     const nightRoles = new Set();
     players.forEach((player) => {
-      if (
-        player.role.availableActions &&
-        !nightRoles.has(player.role.name) &&
-        player.isAlive
-      ) {
+      // Add every role that has a night action
+      if (player.role.availableActions && !nightRoles.has(player.role.name)) {
         nightRoles.add(player.role.name);
       }
     });
 
+    // Start rendering each night role
     RoleView.render(Array.from(nightRoles));
   };
 
+  // Handle voting out of player
   const voteOut = (playerId) => {
     players.forEach((player) => {
       if (player.id === playerId) {
@@ -93,39 +109,53 @@ const Game = (function () {
     });
   };
 
+  // Handle mercenary target dying at night
   const checkMercenaryTarget = (id) => {
     const mercenary = Game.players.filter(
       (player) => player.isAlive && player.role.name === "mercenary"
     );
+
     if (mercenary.length > 0 && mercenary[0].role.target === id)
-      mercenary[0].role.changeTeam(mercenary.id, "Citizens");
+      mercenary[0].role.changeTeam("Citizens");
   };
 
   const killAtNight = (playerIds) => {
-    const names = [];
-    console.log(playerIds);
+    const idsOfPlayersKilled = [];
+
     playerIds.forEach((id) => {
       const player = getPlayerById(id);
-      checkMercenaryTarget(id);
-      player.die();
-      names.push(player.name);
+      idsOfPlayersKilled.push(id);
 
-      if ("onKillNight" in player.role) {
-        const result = player.role.onKillNight();
+      // Resolve special features of Role.OnKillAtNight
+      if ("OnKillAtNight" in player.role) {
+        const result = player.role.OnKillAtNight(id);
         if ("kill" in result) {
+          // Additional Player is also Killed
           const additionalPlayer = getPlayerById(result["kill"]);
-          additionalPlayer.die();
-          names.push(additionalPlayer.name);
+          idsOfPlayersKilled.push(additionalPlayer.id);
         } else if ("save" in result) {
+          // A player is saved from killed
           const target = getPlayerById(result["save"]);
-          target.revive();
-          const playerIndex = names.findIndex((name) => name === target.name);
-          names.splice(playerIndex, 1);
+          const playerIndex = idsOfPlayersKilled.findIndex(
+            (id) => id === target.id
+          );
+          idsOfPlayersKilled.splice(playerIndex, 1);
         }
       }
     });
 
-    View.resolveNight(names);
+    // Kill every player that is supposed to die
+    idsOfPlayersKilled.forEach((id) => {
+      const currentPlayer = getPlayerById(id);
+      currentPlayer.die();
+      checkMercenaryTarget(id); // Handle mercenary target dying at night
+    });
+
+    const namesOfPlayersKilled = idsOfPlayersKilled.map(
+      (id) => getPlayerById(id).name
+    );
+
+    View.resolveNight(namesOfPlayersKilled);
   };
 
   const checkGameEnd = () => {
@@ -133,29 +163,20 @@ const Game = (function () {
     const humanCount = count("human");
 
     const mercenary = Game.players.filter(
-      (player) => player.isAlive && player.role.name === "mercenary"
+      (player) => player.isAlive && player.role.team === "Mercenary"
     );
     if (
       votedOut.length > 0 &&
       mercenary.length > 0 &&
-      votedOut.pop() === mercenary[0].role.target
+      votedOut.pop() === mercenary[0].role.target // Last Person Voted Out is the mercenary target
     ) {
       isGameOver = true;
       winner = "Mercenary";
       PubSub.publish("Game Over", { players, winner });
+      return;
     }
 
-    const skAlive =
-      players.filter(
-        (player) => player.isAlive && player.role.name === "serial killer"
-      ).length > 0;
-    const aliveCount = players.filter((player) => player.isAlive).length;
-    if (skAlive && aliveCount > 1) return;
-
-    if (skAlive && aliveCount == 1) {
-      isGameOver = true;
-      winner = "Serial Killer";
-    } else if (wwCount >= humanCount) {
+    if (wwCount >= humanCount) {
       isGameOver = true;
       winner = "Werewolves";
     } else if (wwCount === 0) {
@@ -199,12 +220,12 @@ const Game = (function () {
   };
 
   const finishNight = () => {
-    console.log(nightEvents);
     const attacked = new Set();
     const revealed = new Set();
     const guarded = new Set();
     Object.entries(nightEvents).forEach(([role, event]) => {
       if ("attack" in event) {
+        // Handle Special Feature of Role.OnContact
         if ("onContact" in getPlayerById(event.attack).role) {
           const resolution = getPlayerById(event.attack).role.onContact(role);
           if ("kill" in resolution) {
@@ -236,7 +257,7 @@ const Game = (function () {
     Array.from(attacked).forEach((id) => {
       if (guarded.has(id)) {
         saved.push(id);
-        if (nightEvents.bodyguard.guard === id) {
+        if ("bodyguard" in nightEvents && nightEvents.bodyguard.guard === id) {
           const bodyguard = players.filter(
             (player) => player.isAlive && player.role.name == "bodyguard"
           )[0];
@@ -248,6 +269,7 @@ const Game = (function () {
     });
 
     killAtNight(killed);
+    console.log(nightEvents);
     nightEvents = {};
   };
 
