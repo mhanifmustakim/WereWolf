@@ -46,6 +46,7 @@ const Game = (function () {
 
     // Set default for possible next game
     prevRoles = roleQuantities;
+    players = shuffleArray(players);
   };
 
   // Count the number of players alive with role: type
@@ -87,6 +88,7 @@ const Game = (function () {
     checkGameEnd();
     if (isGameOver) return; // Stop night actions if already Game Over
 
+    players = shuffleArray(players);
     const nightRoles = new Set();
     players.forEach((player) => {
       // Add every role that has a night action
@@ -269,6 +271,7 @@ const Game = (function () {
     });
 
     killAtNight(killed);
+    players = shuffleArray(players);
     console.log(nightEvents);
     nightEvents = {};
   };

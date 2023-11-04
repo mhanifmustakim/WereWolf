@@ -324,9 +324,9 @@ const View = (function () {
       resolution.innerHTML =
         "It's the morning after the first night, and the villagers are relieved to find that no one was killed by the werewolves.";
     } else {
-      resolution.innerHTML = `It's the morning after the first night, and the villagers are shocked to find ${highlight(
+      resolution.innerHTML = `It's the morning after the first night, and the villagers are shocked to find <br>${highlight(
         names.join(", ")
-      )} killed during the night.`;
+      )}<br> killed during the night.`;
     }
 
     const continueBtn = document.createElement("button");
