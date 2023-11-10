@@ -51,10 +51,10 @@ const View = (function () {
   const displayCurrentPlayers = (players) => {
     const list = document.querySelector("#players-list");
     list.innerHTML = "";
-    players.forEach((player) => {
+    players.forEach((player, index) => {
       if (!player.isAlive) return;
       const playerElement = document.createElement("li");
-      playerElement.textContent = player.name;
+      playerElement.textContent = index + 1 + ". " + player.name;
       playerElement.setAttribute("data-id", player.id);
       list.appendChild(playerElement);
     });
@@ -135,6 +135,15 @@ const View = (function () {
       roleInput.type = "number";
       roleInput.min = roleName == "werewolf" ? 1 : 0;
       roleInput.value = quantity;
+
+      if (roleName != "werewolf" && roleName != "citizen") {
+        if (roleName == "lover") {
+          roleInput.max = 2;
+        } else {
+          roleInput.max = 1;
+        }
+      }
+
       const separator = document.createElement("div");
       separator.textContent = " : ";
 
@@ -357,6 +366,8 @@ const View = (function () {
     main.appendChild(addPlayerForm());
     main.appendChild(currentPlayers);
     main.appendChild(startBtn);
+
+    if (Game.players.length > 0) displayCurrentPlayers(Game.players);
   };
 
   return {

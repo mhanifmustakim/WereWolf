@@ -64,6 +64,11 @@ button {
     gap: 2em;
 }
 
+#players-list{
+    height: 35vh;
+    overflow: auto;
+}
+
 .role-input-group {
     display: grid;
     grid-template-columns: 1fr auto auto;
