@@ -25,6 +25,7 @@ const View = (function () {
 
   const addPlayerForm = () => {
     const form = document.createElement("form");
+    form.id = "add-player-form";
 
     const input = document.createElement("input");
     input.id = "player-name";

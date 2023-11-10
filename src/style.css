@@ -22,13 +22,13 @@
 
 :root {
     font-family: Lacquer;
-    font-size: 32px;
+    font-size: 24px;
+    color: black;
 }
 
 body{
     height: 100vh;
     background: url("./Images/BgImage.jpg");
-    background-repeat: no-repeat;
     background-size: cover;
     background-position: center;
 }
@@ -41,7 +41,7 @@ button {
 
 #main {
     width: 70vw;
-    margin: 0 auto;
+    margin: 1rem auto;
     display: flex;
     flex-flow: column nowrap;
     align-items: center;
@@ -67,6 +67,16 @@ button {
 #players-list{
     height: 35vh;
     overflow: auto;
+}
+
+#add-player-form{
+    display: grid;
+    place-items: center;
+    gap: 0.2em;
+}
+
+input#player-name{
+    border-radius: 0.2em;
 }
 
 .role-input-group {
